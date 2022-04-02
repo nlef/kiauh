@@ -424,26 +424,21 @@ remove_MoonrakerTelegramBot(){
   source_kiauh_ini
 
   ### remove all MoonrakerTelegramBot services
-  FILE="$SYSTEMDDIR/moonraker-telegram-bot?(-*([0-9])).service"
-  if ls $FILE 2>/dev/null 1>&2; then
-    status_msg "Removing Moonraker Services ..."
-    for service in $(ls $FILE | cut -d"/" -f5)
-    do
-      status_msg "Removing $service ..."
-      sudo systemctl stop $service
-      sudo systemctl disable $service
-      sudo rm -f $SYSTEMDDIR/$service
-      ok_msg "Done!"
-    done
-    ### reloading units
-    sudo systemctl daemon-reload
-    sudo systemctl reset-failed
-    ok_msg "MoonrakerTelegramBot Service removed!"
-  fi
+  services_list=($(sudo systemctl list-units -t service --full | grep moonraker-telegram-bot | awk '{print $1}'))
+  echo -e "${services_list[@]}"
+  for service in "${services_list[@]}"
+  do
+    echo -e "${service}"
+    echo -e "Removing $service ..."
+    sudo systemctl stop $service
+    sudo systemctl disable $service
+    sudo rm -f $SYSTEMDDIR/$service
+    echo -e "Done!"
+  done
 
   sudo systemctl daemon-reload
   sudo systemctl reset-failed
-  
+
   ### remove all logfiles
   FILE="${HOME}/klipper_logs/telegram?(-*([0-9])).log"
   if ls $FILE 2>/dev/null 1>&2; then
